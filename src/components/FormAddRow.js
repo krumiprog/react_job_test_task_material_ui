@@ -10,7 +10,7 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const FormAddRow = () => {
+const FormAddRow = ({ addNewRow }) => {
   const classes = useStyles();
 
   const [addRow, setAddRow] = useState(false);
@@ -29,6 +29,7 @@ const FormAddRow = () => {
 
   const handleSubmit = e => {
     e.preventDefault();
+    addNewRow(firstName, lastName, email, phone);
     setFirstName('');
     setLastName('');
     setEmail('');

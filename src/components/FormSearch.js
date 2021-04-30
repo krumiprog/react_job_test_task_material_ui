@@ -9,13 +9,15 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-const FormSearch = () => {
+const FormSearch = ({ setSearchWord }) => {
   const classes = useStyles();
 
   const [word, setWord] = useState('');
 
   const handleSubmit = e => {
     e.preventDefault();
+    setSearchWord(word);
+    setWord('');
   };
 
   return (

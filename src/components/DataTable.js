@@ -7,6 +7,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
+import { ROWS_PER_PAGE } from '../config';
 
 const headCells = [
   { id: 'id', label: 'Id', numeric: true },
@@ -30,6 +31,12 @@ const useStyles = makeStyles(theme => ({
     position: 'absolute',
     top: 20,
     width: 1,
+  },
+  row: {
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover,
+    },
+    cursor: 'pointer',
   },
 }));
 
@@ -61,12 +68,13 @@ const stableSort = (array, comparator) => {
   return stabilizedThis.map(el => el[0]);
 };
 
-const DataTable = ({ rows }) => {
+const DataTable = ({ rows, page, setDetailRow }) => {
   const classes = useStyles();
 
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('id');
-  const [selected, setSelected] = useState(null);
+
+  const curPage = page - 1;
 
   const createSortHandler = property => e => {
     handleRequestSort(e, property);
@@ -109,15 +117,19 @@ const DataTable = ({ rows }) => {
         </TableHead>
         <TableBody>
           {stableSort(rows, getComparator(order, orderBy))
-            .slice(0, 50)
+            .slice(
+              curPage * ROWS_PER_PAGE,
+              curPage * ROWS_PER_PAGE + ROWS_PER_PAGE
+            )
             .map((row, index) => {
               return (
                 <TableRow
-                  key={row.id}
                   hover
-                  // onClick={event => handleClick(event, row.id)}
+                  className={classes.row}
+                  key={row.id}
+                  onClick={() => setDetailRow(row)}
                 >
-                  <TableCell>{row.id}</TableCell>
+                  <TableCell align="right">{row.id}</TableCell>
                   <TableCell>{row.firstName}</TableCell>
                   <TableCell>{row.lastName}</TableCell>
                   <TableCell>{row.email}</TableCell>

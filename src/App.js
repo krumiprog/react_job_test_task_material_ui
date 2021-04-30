@@ -31,32 +31,83 @@ const App = () => {
 
   const [dataSize, setDataSize] = useState(DATA_SMALL_SIZE);
   const [data, setData] = useState([]);
+  const [searchData, setSearchData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
+  const [searchWord, setSearchWord] = useState('');
   const [detailRow, setDetailRow] = useState(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const url = dataSize === DATA_SMALL_SIZE ? SMALL_URL : LARGE_URL;
     setLoading(true);
+    setSearchWord('');
+    setDetailRow(null);
 
     fetch(`${url}`)
       .then(response => response.json())
       .then(result => {
-        setData(result);
+        setData(
+          result.map((item, index) => {
+            item.id = index + 1;
+            return item;
+          })
+        );
         setLoading(false);
-
-        console.log(result);
       })
       .catch(err => {
         setLoading(false);
-        setError(err.message);
+        setError(err);
       });
   }, [dataSize]);
 
   useEffect(() => {
-    setTotalPages(Math.round(data.length / ROWS_PER_PAGE));
-  }, [data]);
+    if (searchData.length > 0) {
+      setTotalPages(Math.round(searchData.length / ROWS_PER_PAGE));
+    } else {
+      setTotalPages(Math.round(data.length / ROWS_PER_PAGE));
+    }
+    setPage(1);
+  }, [data, searchData]);
+
+  useEffect(() => {
+    if (!searchWord.trim()) {
+      setSearchData([]);
+      return;
+    }
+    const newData = data.filter(item => {
+      if (
+        item.firstName.includes(searchWord) ||
+        item.lastName.includes(searchWord) ||
+        item.email.includes(searchWord) ||
+        item.phone.includes(searchWord)
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    setSearchData(newData);
+  }, [searchWord]);
+
+  const addNewRow = (firstName, lastName, email, phone) => {
+    const newItem = {
+      id: data.length + 1,
+      firstName,
+      lastName,
+      email,
+      phone,
+      address: {
+        streetAddress: null,
+        city: null,
+        state: null,
+        zip: null,
+      },
+      description: null,
+    };
+    setData([...JSON.parse(JSON.stringify(data)), newItem]);
+  };
 
   return (
     <>
@@ -73,13 +124,17 @@ const App = () => {
         ) : (
           <>
             <Paper className={classes.paper}>
-              <FormAddRow />
+              <FormAddRow addNewRow={addNewRow} />
             </Paper>
             <Paper className={classes.paper}>
-              <FormSearch />
+              <FormSearch setSearchWord={setSearchWord} />
             </Paper>
             <Paper className={classes.paper}>
-              <DataTable rows={data} />
+              <DataTable
+                rows={searchData.length > 0 ? searchData : data}
+                page={page}
+                setDetailRow={setDetailRow}
+              />
             </Paper>
             {detailRow && (
               <Paper className={classes.paper}>
@@ -89,10 +144,12 @@ const App = () => {
             {totalPages > 0 && (
               <div className={classes.center}>
                 <Pagination
-                  count={totalPages}
                   variant="outlined"
                   shape="rounded"
                   color="primary"
+                  count={totalPages}
+                  page={page}
+                  onChange={(e, value) => setPage(value)}
                 />
               </div>
             )}

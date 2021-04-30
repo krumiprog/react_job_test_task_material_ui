@@ -1,14 +1,15 @@
 import { Typography } from '@material-ui/core';
 
-const Details = props => {
+const Details = ({ detailRow }) => {
   const {
     id,
     firstName,
     lastName,
     email,
     phone,
-    address: { streetAddress, city, state, zip, description },
-  } = props;
+    address: { streetAddress, city, state, zip },
+    description,
+  } = detailRow;
 
   return (
     <>
